@@ -48,10 +48,10 @@ export default function PaymentBreakdownChart({ data }: { data: PB[] }) {
           ))}
         </Pie>
         <Tooltip
-          formatter={(value: number, _n: string, entry: { payload: { pct: number } }) => [
-            `${value.toLocaleString()} trips (${entry.payload.pct.toFixed(1)}%)`,
-            'Count',
-          ]}
+          formatter={(value: number, _name, entry) => {
+            const pct = (entry?.payload as { pct?: number } | undefined)?.pct ?? 0;
+            return [`${value.toLocaleString()} trips (${pct.toFixed(1)}%)`, 'Count'];
+          }}
         />
         <Legend verticalAlign="bottom" height={32} iconType="circle" />
       </PieChart>
