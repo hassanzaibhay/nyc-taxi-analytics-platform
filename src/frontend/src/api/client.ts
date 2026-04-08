@@ -3,6 +3,7 @@ import type {
   DailyRevenue,
   DataDateRange,
   DateRange,
+  FareBucket,
   HourlyTrip,
   PaymentBreakdown,
   RealtimeDemand,
@@ -59,6 +60,11 @@ export const fetchPaymentBreakdown = (range: DateRange) =>
 
 export const fetchTipAnalysis = (range: DateRange) =>
   api.get<TipByHour[]>('/revenue/tip-analysis', { params: params(range) }).then((r) => r.data);
+
+export const fetchFareDistribution = (range: DateRange) =>
+  api
+    .get<FareBucket[]>('/revenue/fare-distribution', { params: params(range) })
+    .then((r) => r.data);
 
 export const fetchRealtimeDemand = () =>
   api.get<RealtimeDemand[]>('/realtime/demand').then((r) => r.data);

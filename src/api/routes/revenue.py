@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db import get_db
-from api.models.schemas import DailyRevenue, PaymentBreakdown, TipByHour
+from api.models.schemas import DailyRevenue, FareBucket, PaymentBreakdown, TipByHour
 
 router = APIRouter()
 
@@ -102,3 +102,34 @@ async def tip_analysis(
     return [
         TipByHour(hour=row["hour"], avg_tip_pct=float(row["avg_tip_pct"] or 0)) for row in rows
     ]
+
+
+@router.get("/fare-distribution", response_model=list[FareBucket])
+async def fare_distribution(
+    date_from: date = Query(...),
+    date_to: date = Query(...),
+    bucket_size: int = Query(5, ge=1, le=50),
+    db: AsyncSession = Depends(get_db),
+) -> list[FareBucket]:
+    sql = """
+        SELECT (FLOOR(avg_fare / :bucket_size) * :bucket_size)::int AS fare_bucket,
+               SUM(trip_count)::int                                 AS count
+        FROM analytics.hourly_zone_demand
+        WHERE hour_start::date >= :date_from
+          AND hour_start::date <= :date_to
+          AND avg_fare > 0
+          AND avg_fare < 200
+        GROUP BY fare_bucket
+        ORDER BY fare_bucket
+    """
+    rows = (
+        (
+            await db.execute(
+                text(sql),
+                {"date_from": date_from, "date_to": date_to, "bucket_size": bucket_size},
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [FareBucket(fare_bucket=row["fare_bucket"], count=row["count"]) for row in rows]

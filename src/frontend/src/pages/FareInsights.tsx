@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import DateRangeFilter from '../components/DateRangeFilter';
 import PaymentBreakdownChart from '../components/charts/PaymentBreakdown';
-import { usePaymentBreakdown, useTipAnalysis } from '../hooks/useRevenue';
+import { useFareDistribution, usePaymentBreakdown, useTipAnalysis } from '../hooks/useRevenue';
 import {
   Bar,
   BarChart,
@@ -17,12 +17,48 @@ export default function FareInsights() {
   const [range, setRange] = useState<DateRange>({});
   const payments = usePaymentBreakdown(range);
   const tips = useTipAnalysis(range);
+  const fares = useFareDistribution(range);
+  const fareRows = (fares.data ?? []).map((b) => ({
+    ...b,
+    label: `$${b.fare_bucket}-${b.fare_bucket + 5}`,
+  }));
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Fare Insights</h2>
         <DateRangeFilter onChange={setRange} />
+      </div>
+
+      <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
+        <h3 className="mb-4 text-sm font-semibold text-slate-500">Fare Distribution</h3>
+        {fares.isLoading ? (
+          <div className="h-64 animate-pulse rounded bg-slate-100" />
+        ) : fareRows.length > 0 ? (
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={fareRows}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis
+                dataKey="label"
+                tick={{ fontSize: 11 }}
+                label={{ value: 'Fare Range (USD)', position: 'insideBottom', offset: -4 }}
+              />
+              <YAxis
+                tick={{ fontSize: 12 }}
+                label={{ value: 'Trip Count', angle: -90, position: 'insideLeft' }}
+              />
+              <Tooltip
+                formatter={(value: number) => [value.toLocaleString(), 'Trips']}
+                labelFormatter={(label: string) => `Fare range: ${label}`}
+              />
+              <Bar dataKey="count" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="flex h-64 items-center justify-center text-sm text-slate-500">
+            No fare data available for this range.
+          </div>
+        )}
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
