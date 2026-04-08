@@ -23,7 +23,10 @@ async def realtime_demand(db: AsyncSession = Depends(get_db)) -> list[RealtimeDe
     sql = """
         SELECT zone_id, window_start, window_end, trip_count, avg_fare
         FROM realtime.zone_demand_live
-        WHERE window_start >= NOW() - INTERVAL '1 hour'
+        WHERE window_start >= (
+            SELECT MAX(window_start) - INTERVAL '1 hour'
+            FROM realtime.zone_demand_live
+        )
         ORDER BY window_start DESC, zone_id
         LIMIT 500
     """
@@ -35,7 +38,10 @@ async def _event_generator(request: Request):
     sql = """
         SELECT zone_id, window_start, window_end, trip_count, avg_fare
         FROM realtime.zone_demand_live
-        WHERE window_start >= NOW() - INTERVAL '15 minutes'
+        WHERE window_start >= (
+            SELECT MAX(window_start) - INTERVAL '15 minutes'
+            FROM realtime.zone_demand_live
+        )
         ORDER BY window_start DESC, zone_id
         LIMIT 100
     """

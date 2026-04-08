@@ -28,7 +28,10 @@
       "Bash(curl -s http://localhost:8000/api/trips/date-range)",
       "Bash(curl -s \"http://localhost:8000/api/revenue/daily?date_from=2024-01-01&date_to=2024-04-01\")",
       "Bash(curl -s \"http://localhost:8000/api/trips/summary?date_from=2024-01-01&date_to=2024-04-01\")",
-      "Bash(curl -s \"http://localhost:8000/api/zones/top?date_from=2024-01-01&date_to=2024-04-01&n=3\")"
+      "Bash(curl -s \"http://localhost:8000/api/zones/top?date_from=2024-01-01&date_to=2024-04-01&n=3\")",
+      "Bash(grep -n \"^  [a-z].*:$\\\\|^networks:\\\\|^volumes:\" docker-compose.yml)",
+      "Bash(MSYS_NO_PATHCONV=1 docker compose exec -T kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic nyc-taxi.trips.raw --max-messages 3 --from-beginning)",
+      "Bash(curl -s http://localhost:8000/api/realtime/demand)"
     ]
   }
 }

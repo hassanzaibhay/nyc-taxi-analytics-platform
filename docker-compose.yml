@@ -175,6 +175,29 @@ services:
       retries: 5
 
   # ---------------------------------------------------------------------------
+  # Kafka producer (profile: producer) — replays parquet to Kafka
+  # ---------------------------------------------------------------------------
+  kafka-producer:
+    build:
+      context: .
+      dockerfile: docker/kafka-producer/Dockerfile
+    image: nyc-taxi/kafka-producer:latest
+    container_name: kafka-producer
+    volumes:
+      - ./data/raw:/data/raw:ro
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KAFKA_TOPIC_TRIPS: nyc-taxi.trips.raw
+      KAFKA_PRODUCER_DELAY_MS: "10"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - nyc-taxi-net
+    profiles:
+      - producer
+
+  # ---------------------------------------------------------------------------
   # PostgreSQL — analytics + Airflow metadata
   # ---------------------------------------------------------------------------
   postgres:

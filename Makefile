@@ -97,9 +97,12 @@ run-spark-batch: ## Submit Spark batch analytics jobs
 run-spark-stream: ## Start Spark Structured Streaming job
 	bash scripts/submit-spark-job.sh realtime_demand
 
-.PHONY: run-kafka
-run-kafka: ## Run the simulated Kafka producer
-	bash scripts/run-kafka-producer.sh
+.PHONY: run-kafka stop-kafka
+run-kafka: ## Run the simulated Kafka producer (containerized)
+	docker compose --profile producer up --build kafka-producer
+
+stop-kafka: ## Stop the Kafka producer container
+	docker compose --profile producer down
 
 .PHONY: run-all-batch
 run-all-batch: ingest run-hadoop run-spark-batch ## Full batch pipeline
