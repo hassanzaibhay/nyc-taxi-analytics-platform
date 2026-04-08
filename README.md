@@ -4,6 +4,8 @@
 ![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)
 ![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)
 
+![NYC Taxi Analytics Dashboard](docs/screenshots/overview.png)
+
 End-to-end big data analytics platform processing NYC TLC taxi trip records through Hadoop, Spark, Kafka, Airflow, PostgreSQL, FastAPI, and a React dashboard — all containerized with Docker Compose and deployable to AWS or GCP via Terraform.
 
 ## Architecture
