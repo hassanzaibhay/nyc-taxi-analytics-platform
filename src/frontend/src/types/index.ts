@@ -59,3 +59,8 @@ export interface DataDateRange {
   min_date: string;
   max_date: string;
 }
+
+export interface TipByHour {
+  hour: number;
+  avg_tip_pct: number;
+}

@@ -6,6 +6,7 @@ import type {
   HourlyTrip,
   PaymentBreakdown,
   RealtimeDemand,
+  TipByHour,
   TopZone,
   TripSummary,
   ZoneDemandPoint,
@@ -55,6 +56,9 @@ export const fetchPaymentBreakdown = (range: DateRange) =>
   api
     .get<PaymentBreakdown[]>('/revenue/payment-breakdown', { params: params(range) })
     .then((r) => r.data);
+
+export const fetchTipAnalysis = (range: DateRange) =>
+  api.get<TipByHour[]>('/revenue/tip-analysis', { params: params(range) }).then((r) => r.data);
 
 export const fetchRealtimeDemand = () =>
   api.get<RealtimeDemand[]>('/realtime/demand').then((r) => r.data);

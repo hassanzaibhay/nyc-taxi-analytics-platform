@@ -31,7 +31,27 @@
       "Bash(curl -s \"http://localhost:8000/api/zones/top?date_from=2024-01-01&date_to=2024-04-01&n=3\")",
       "Bash(grep -n \"^  [a-z].*:$\\\\|^networks:\\\\|^volumes:\" docker-compose.yml)",
       "Bash(MSYS_NO_PATHCONV=1 docker compose exec -T kafka /opt/kafka/bin/kafka-console-consumer.sh --bootstrap-server localhost:9092 --topic nyc-taxi.trips.raw --max-messages 3 --from-beginning)",
-      "Bash(curl -s http://localhost:8000/api/realtime/demand)"
+      "Bash(curl -s http://localhost:8000/api/realtime/demand)",
+      "Bash(ruff check:*)",
+      "Bash(ruff format:*)",
+      "Bash(grep -iE \"\\\\.env$|\\\\.tfstate\")",
+      "Bash(grep -E \"^\\\\.env$|tfstate$\")",
+      "Bash(echo \"env-tracked: $?\")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(pip install:*)",
+      "Bash(mypy src/api src/ingestion src/kafka --ignore-missing-imports)",
+      "Bash(pytest tests/ -v --tb=short)",
+      "Bash(pytest tests/test_mappers.py tests/test_reducers.py -v --tb=short)",
+      "Bash(pytest tests/test_mappers.py tests/test_reducers.py -q)",
+      "Bash(gh run:*)",
+      "Bash(curl -s \"https://api.github.com/repos/hassanzaibhay/nyc-taxi-analytics-platform/actions/runs?per_page=1&branch=main\")",
+      "Bash(make help:*)",
+      "Bash(make urls:*)",
+      "Bash(make status:*)",
+      "Bash(xargs grep:*)",
+      "Bash(xargs -I{} echo {})"
     ]
   }
 }

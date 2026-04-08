@@ -9,7 +9,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.db import get_db
-from api.models.schemas import DailyRevenue, PaymentBreakdown
+from api.models.schemas import DailyRevenue, PaymentBreakdown, TipByHour
 
 router = APIRouter()
 
@@ -77,3 +77,26 @@ async def payment_breakdown(
             revenue=row["credit_rev"] or 0,
         ),
     ]
+
+
+@router.get("/tip-analysis", response_model=list[TipByHour])
+async def tip_analysis(
+    date_from: date = Query(...),
+    date_to: date = Query(...),
+    db: AsyncSession = Depends(get_db),
+) -> list[TipByHour]:
+    sql = """
+        SELECT EXTRACT(HOUR FROM hour_start)::int           AS hour,
+               ROUND(AVG(avg_tip_percentage)::numeric, 2)   AS avg_tip_pct
+        FROM analytics.hourly_zone_demand
+        WHERE hour_start::date >= :date_from
+          AND hour_start::date <= :date_to
+        GROUP BY EXTRACT(HOUR FROM hour_start)
+        ORDER BY hour
+    """
+    rows = (
+        (await db.execute(text(sql), {"date_from": date_from, "date_to": date_to}))
+        .mappings()
+        .all()
+    )
+    return [TipByHour(hour=row["hour"], avg_tip_pct=float(row["avg_tip_pct"] or 0)) for row in rows]

@@ -67,6 +67,11 @@ class DateRange(BaseModel):
     max_date: date
 
 
+class TipByHour(BaseModel):
+    hour: int
+    avg_tip_pct: float
+
+
 class RealtimeDemand(ORMModel):
     zone_id: int
     window_start: datetime
