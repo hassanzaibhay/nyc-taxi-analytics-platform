@@ -61,12 +61,23 @@ def test_health_ok() -> None:
 
 
 def test_trip_summary_returns_schema() -> None:
-    res = client.get("/api/trips/summary")
+    res = client.get(
+        "/api/trips/summary",
+        params={"date_from": "2024-01-01", "date_to": "2024-01-31"},
+    )
     assert res.status_code == 200
     body = res.json()
     assert set(body.keys()) >= {"total_trips", "total_revenue", "avg_fare"}
 
 
 def test_invalid_query_param() -> None:
-    res = client.get("/api/zones/top", params={"n": 0})
+    res = client.get(
+        "/api/zones/top",
+        params={"n": 0, "date_from": "2024-01-01", "date_to": "2024-01-31"},
+    )
+    assert res.status_code == 422
+
+
+def test_missing_required_dates() -> None:
+    res = client.get("/api/trips/summary")
     assert res.status_code == 422

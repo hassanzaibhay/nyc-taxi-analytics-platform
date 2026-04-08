@@ -25,7 +25,7 @@ def parse_hour(value: str) -> str:
     Spark CSV writes ``2024-03-01T00:18:51.000`` — the first 13 chars are
     already the hour key, so slice directly (no datetime parsing needed).
     """
-    s = value.strip()
+    s = value.strip().replace(" ", "T")
     if len(s) < 13:
         raise ValueError(f"datetime too short: {s!r}")
     return s[:13]
