@@ -53,15 +53,21 @@ def write_batch_to_postgres(batch_df: DataFrame, batch_id: int) -> None:
     pg_user = os.environ.get("POSTGRES_USER", "taxi_user")
     pg_pass = os.environ.get("POSTGRES_PASSWORD", "taxi_pass")
     url = f"jdbc:postgresql://{pg_host}:{pg_port}/{pg_db}"
+    if batch_df.isEmpty():
+        return
     log.info("Writing micro-batch %s with %s rows", batch_id, batch_df.count())
+    # Overwrite the realtime table each micro-batch — it only needs the latest
+    # window snapshot, not history. `truncate=true` keeps schema/permissions
+    # intact and avoids ON CONFLICT primary-key violations from plain appends.
     (
-        batch_df.write.mode("append")
+        batch_df.write.mode("overwrite")
         .format("jdbc")
         .option("url", url)
         .option("dbtable", "realtime.zone_demand_live")
         .option("user", pg_user)
         .option("password", pg_pass)
         .option("driver", "org.postgresql.Driver")
+        .option("truncate", "true")
         .save()
     )
 

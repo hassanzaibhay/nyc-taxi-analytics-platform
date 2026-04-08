@@ -104,7 +104,7 @@ See `docs/cloud-deployment-guide.md` for full instructions, prerequisites, and a
 |---|---|
 | Storage | HDFS, MinIO (S3), PostgreSQL 16 |
 | Batch | Hadoop 3.4.1, Spark 3.5.4 |
-| Streaming | Kafka 3.8 (KRaft), Spark Structured Streaming |
+| Streaming | Kafka 3.9.0 (KRaft), Spark Structured Streaming |
 | Orchestration | Airflow 2.10.4 |
 | API | FastAPI, async SQLAlchemy, asyncpg |
 | Frontend | React 18, Vite, TypeScript, Tailwind, Recharts |

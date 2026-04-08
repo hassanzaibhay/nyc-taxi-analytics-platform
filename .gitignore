@@ -7,7 +7,7 @@ data/
 .env
 *.env.local
 
-# Claude Code working files
+# Local working notes (not checked in)
 CLAUDE.md
 prompt.md
 
