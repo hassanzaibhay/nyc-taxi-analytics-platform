@@ -1,0 +1,51 @@
+# Data
+data/
+*.parquet
+*.csv
+
+# Environment
+.env
+*.env.local
+
+# Claude Code working files
+CLAUDE.md
+prompt.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+*.egg-info/
+dist/
+build/
+
+# Node / Frontend
+node_modules/
+src/frontend/dist/
+
+# Docker
+docker-compose.override.yml
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfplan
+.terraform.lock.hcl
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

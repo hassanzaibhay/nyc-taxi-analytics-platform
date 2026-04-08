@@ -1,0 +1,30 @@
+[project]
+name = "nyc-taxi-analytics-platform"
+version = "1.0.0"
+description = "End-to-end big data analytics platform for NYC TLC trip data."
+authors = [{ name = "Hassan Zaib Hayat", email = "hassanzaibhayatske@gmail.com" }]
+requires-python = ">=3.11"
+license = { text = "MIT" }
+
+[tool.ruff]
+line-length = 99
+target-version = "py311"
+extend-exclude = ["src/frontend", "data", "infra"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "C4"]
+ignore = ["E501"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+exclude = ["src/hadoop/", "src/frontend/", "tests/", "infra/"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-ra --strict-markers"

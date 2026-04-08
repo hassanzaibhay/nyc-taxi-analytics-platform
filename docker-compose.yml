@@ -1,0 +1,338 @@
+# =============================================================================
+# NYC Taxi Analytics Platform — Local Cluster
+# All images are pinned. Never use :latest in this file.
+# =============================================================================
+
+networks:
+  nyc-taxi-net:
+    driver: bridge
+    name: nyc-taxi-net
+
+volumes:
+  hdfs-namenode-data:
+  hdfs-datanode-data:
+  postgres-data:
+  kafka-data:
+  minio-data:
+
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: docker/airflow/Dockerfile
+  env_file: .env
+  environment:
+    AIRFLOW__CORE__EXECUTOR: ${AIRFLOW__CORE__EXECUTOR}
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: ${AIRFLOW__DATABASE__SQL_ALCHEMY_CONN}
+    AIRFLOW__CELERY__BROKER_URL: ${AIRFLOW__CELERY__BROKER_URL}
+    AIRFLOW__CELERY__RESULT_BACKEND: ${AIRFLOW__CELERY__RESULT_BACKEND}
+    AIRFLOW__CORE__FERNET_KEY: ${AIRFLOW__CORE__FERNET_KEY}
+    AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+    AIRFLOW__CORE__DAGS_FOLDER: /opt/airflow/dags
+  volumes:
+    - ./airflow/dags:/opt/airflow/dags
+    - ./src:/opt/airflow/src
+  networks:
+    - nyc-taxi-net
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_started
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Hadoop (HDFS + YARN) — pseudo-distributed
+  # ---------------------------------------------------------------------------
+  namenode:
+    build:
+      context: .
+      dockerfile: docker/hadoop/Dockerfile
+    image: nyc-taxi/hadoop:3.4.1
+    container_name: namenode
+    hostname: namenode
+    user: root
+    command: ["/bin/bash", "/opt/scripts/bootstrap-namenode.sh"]
+    environment:
+      CLUSTER_NAME: nyc-taxi
+      HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop
+    ports:
+      - "9870:9870"
+      - "8020:8020"
+      - "8088:8088"
+    volumes:
+      - hdfs-namenode-data:/hadoop/dfs/name
+      - ./docker/hadoop/config:/opt/hadoop/etc/hadoop
+      - ./docker/hadoop/scripts:/opt/scripts
+      - ./src/hadoop:/opt/mapreduce
+      - ./data:/opt/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9870/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - nyc-taxi-net
+
+  datanode:
+    image: nyc-taxi/hadoop:3.4.1
+    container_name: datanode
+    hostname: datanode
+    user: root
+    command: ["/bin/bash", "/opt/scripts/bootstrap-datanode.sh"]
+    environment:
+      HADOOP_CONF_DIR: /opt/hadoop/etc/hadoop
+    volumes:
+      - hdfs-datanode-data:/hadoop/dfs/data
+      - ./docker/hadoop/config:/opt/hadoop/etc/hadoop
+      - ./docker/hadoop/scripts:/opt/scripts
+      - ./src/hadoop:/opt/mapreduce
+      - ./data:/opt/data
+    depends_on:
+      namenode:
+        condition: service_healthy
+    networks:
+      - nyc-taxi-net
+
+  # ---------------------------------------------------------------------------
+  # Spark
+  # ---------------------------------------------------------------------------
+  spark-master:
+    image: apache/spark:3.5.4
+    container_name: spark-master
+    user: root
+    command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      - ./src/spark:/opt/spark-jobs
+      - ./src:/opt/src
+      - ./data:/opt/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - nyc-taxi-net
+
+  spark-worker:
+    image: apache/spark:3.5.4
+    container_name: spark-worker
+    user: root
+    command:
+      - "/opt/spark/bin/spark-class"
+      - "org.apache.spark.deploy.worker.Worker"
+      - "spark://spark-master:7077"
+    environment:
+      SPARK_NO_DAEMONIZE: "true"
+      SPARK_WORKER_MEMORY: 2G
+      SPARK_WORKER_CORES: 2
+    volumes:
+      - ./src/spark:/opt/spark-jobs
+      - ./src:/opt/src
+      - ./data:/opt/data
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    networks:
+      - nyc-taxi-net
+
+  # ---------------------------------------------------------------------------
+  # Kafka — KRaft mode (no ZooKeeper)
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    user: root
+    volumes:
+      - kafka-data:/tmp/kraft-combined-logs
+    networks:
+      - nyc-taxi-net
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — analytics + Airflow metadata
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nyc-taxi-net
+
+  # ---------------------------------------------------------------------------
+  # MinIO (S3-compatible object store)
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:RELEASE.2024-11-07T00-52-20Z
+    container_name: minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - nyc-taxi-net
+
+  # ---------------------------------------------------------------------------
+  # Redis — Airflow Celery broker
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - nyc-taxi-net
+
+  # ---------------------------------------------------------------------------
+  # Airflow
+  # ---------------------------------------------------------------------------
+  airflow-init:
+    <<: *airflow-common
+    container_name: airflow-init
+    entrypoint: /bin/bash
+    command:
+      - -c
+      - |
+        airflow db migrate && \
+        airflow users create \
+          --username admin --password admin \
+          --firstname Hassan --lastname Hayat \
+          --role Admin --email hassanzaibhayatske@gmail.com || true
+
+  airflow-webserver:
+    <<: *airflow-common
+    container_name: airflow-webserver
+    command: webserver
+    ports:
+      - "8081:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: airflow-scheduler
+    command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-worker:
+    <<: *airflow-common
+    container_name: airflow-worker
+    command: celery worker
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+
+  # ---------------------------------------------------------------------------
+  # API Server (FastAPI)
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: docker/api/Dockerfile
+    container_name: api
+    env_file: .env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      API_WORKERS: ${API_WORKERS:-2}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src/api:/app/api
+      - ./src:/app/src
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - nyc-taxi-net
+
+  # ---------------------------------------------------------------------------
+  # Frontend (React + Vite + nginx)
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/ >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - nyc-taxi-net
