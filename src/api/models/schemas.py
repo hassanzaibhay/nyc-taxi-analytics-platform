@@ -39,12 +39,21 @@ class ZoneDemandPoint(ORMModel):
     zone_id: int
     hour: int
     avg_trip_count: float
+    zone_name: str | None = None
+    borough: str | None = None
 
 
 class TopZone(ORMModel):
     zone_id: int
     trip_count: int
     total_revenue: Decimal
+    zone_name: str | None = None
+    borough: str | None = None
+
+
+class FareBucket(BaseModel):
+    fare_bucket: int
+    count: int
 
 
 class DailyRevenue(ORMModel):
@@ -78,3 +87,5 @@ class RealtimeDemand(ORMModel):
     window_end: datetime
     trip_count: int
     avg_fare: Decimal | None = None
+    zone_name: str | None = None
+    borough: str | None = None

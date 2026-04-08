@@ -32,6 +32,7 @@ help:
 	@echo   make ingest            Upload Parquet files to HDFS
 	@echo   make convert-parquet   Convert Parquet to CSV for Hadoop
 	@echo   make seed              download + validate + ingest
+	@echo   make load-zones        Load NYC taxi zone lookup into PostgreSQL
 	@echo Processing:
 	@echo   make run-hadoop        Run Hadoop MapReduce job
 	@echo   make run-spark-batch   Run all Spark batch jobs
@@ -122,6 +123,10 @@ ingest:
 
 .PHONY: seed
 seed: download validate ingest
+
+.PHONY: load-zones
+load-zones:
+	bash scripts/load-zone-lookup.sh
 
 # === Processing ===============================================================
 

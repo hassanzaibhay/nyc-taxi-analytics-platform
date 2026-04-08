@@ -47,6 +47,13 @@ CREATE TABLE IF NOT EXISTS analytics.daily_summary (
     avg_passenger_count NUMERIC(4,2)
 );
 
+CREATE TABLE IF NOT EXISTS analytics.taxi_zones (
+    location_id  INTEGER       PRIMARY KEY,
+    borough      VARCHAR(50)   NOT NULL,
+    zone_name    VARCHAR(100)  NOT NULL,
+    service_zone VARCHAR(50)
+);
+
 CREATE TABLE IF NOT EXISTS realtime.zone_demand_live (
     zone_id      INTEGER   NOT NULL,
     window_start TIMESTAMP NOT NULL,
@@ -69,4 +76,5 @@ ALTER SCHEMA realtime  OWNER TO taxi_user;
 ALTER SCHEMA raw       OWNER TO taxi_user;
 ALTER TABLE analytics.hourly_zone_demand OWNER TO taxi_user;
 ALTER TABLE analytics.daily_summary       OWNER TO taxi_user;
+ALTER TABLE analytics.taxi_zones          OWNER TO taxi_user;
 ALTER TABLE realtime.zone_demand_live     OWNER TO taxi_user;

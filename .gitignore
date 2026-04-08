@@ -1,7 +1,9 @@
 # Data
 data/
+!data/taxi_zone_lookup.csv
 *.parquet
 *.csv
+!data/taxi_zone_lookup.csv
 
 # Environment
 .env

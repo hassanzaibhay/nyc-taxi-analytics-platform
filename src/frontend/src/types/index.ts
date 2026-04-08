@@ -19,12 +19,21 @@ export interface ZoneDemandPoint {
   zone_id: number;
   hour: number;
   avg_trip_count: number;
+  zone_name: string | null;
+  borough: string | null;
 }
 
 export interface TopZone {
   zone_id: number;
   trip_count: number;
   total_revenue: number;
+  zone_name: string | null;
+  borough: string | null;
+}
+
+export interface FareBucket {
+  fare_bucket: number;
+  count: number;
 }
 
 export interface DailyRevenue {
@@ -48,6 +57,8 @@ export interface RealtimeDemand {
   window_end: string;
   trip_count: number;
   avg_fare: number | null;
+  zone_name: string | null;
+  borough: string | null;
 }
 
 export interface DateRange {

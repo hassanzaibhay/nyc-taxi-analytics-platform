@@ -22,14 +22,17 @@ async def zone_demand(
 ) -> list[ZoneDemandPoint]:
     sql = """
         SELECT
-            zone_id,
-            EXTRACT(HOUR FROM hour_start)::int AS hour,
-            AVG(trip_count)::float             AS avg_trip_count
-        FROM analytics.hourly_zone_demand
-        WHERE hour_start::date >= :date_from
-          AND hour_start::date <= :date_to
-        GROUP BY zone_id, hour
-        ORDER BY zone_id, hour
+            h.zone_id,
+            EXTRACT(HOUR FROM h.hour_start)::int AS hour,
+            AVG(h.trip_count)::float             AS avg_trip_count,
+            MAX(z.zone_name)                     AS zone_name,
+            MAX(z.borough)                       AS borough
+        FROM analytics.hourly_zone_demand h
+        LEFT JOIN analytics.taxi_zones z ON h.zone_id = z.location_id
+        WHERE h.hour_start::date >= :date_from
+          AND h.hour_start::date <= :date_to
+        GROUP BY h.zone_id, hour
+        ORDER BY h.zone_id, hour
     """
     rows = (
         (await db.execute(text(sql), {"date_from": date_from, "date_to": date_to}))
@@ -47,13 +50,16 @@ async def top_zones(
     db: AsyncSession = Depends(get_db),
 ) -> list[TopZone]:
     sql = """
-        SELECT zone_id,
-               SUM(trip_count)::int      AS trip_count,
-               SUM(total_revenue)        AS total_revenue
-        FROM analytics.hourly_zone_demand
-        WHERE hour_start::date >= :date_from
-          AND hour_start::date <= :date_to
-        GROUP BY zone_id
+        SELECT h.zone_id,
+               SUM(h.trip_count)::int      AS trip_count,
+               SUM(h.total_revenue)        AS total_revenue,
+               MAX(z.zone_name)            AS zone_name,
+               MAX(z.borough)              AS borough
+        FROM analytics.hourly_zone_demand h
+        LEFT JOIN analytics.taxi_zones z ON h.zone_id = z.location_id
+        WHERE h.hour_start::date >= :date_from
+          AND h.hour_start::date <= :date_to
+        GROUP BY h.zone_id
         ORDER BY trip_count DESC
         LIMIT :n
     """

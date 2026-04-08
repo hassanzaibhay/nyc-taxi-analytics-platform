@@ -52,7 +52,10 @@
       "Bash(make status:*)",
       "Bash(xargs grep:*)",
       "Bash(xargs -I{} echo {})",
-      "Bash(pytest tests/ -q --tb=short)"
+      "Bash(pytest tests/ -q --tb=short)",
+      "Bash(mkdir -p data)",
+      "Bash(curl -fsSL -o data/taxi_zone_lookup.csv https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv)",
+      "Bash(bash scripts/load-zone-lookup.sh)"
     ]
   }
 }
