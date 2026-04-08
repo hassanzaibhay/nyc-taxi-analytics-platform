@@ -7,7 +7,7 @@ from functools import lru_cache
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):  # type: ignore[misc]
+class Settings(BaseSettings):
     """Runtime settings for the FastAPI server."""
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=False)
