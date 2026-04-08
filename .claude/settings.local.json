@@ -55,7 +55,9 @@
       "Bash(pytest tests/ -q --tb=short)",
       "Bash(mkdir -p data)",
       "Bash(curl -fsSL -o data/taxi_zone_lookup.csv https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv)",
-      "Bash(bash scripts/load-zone-lookup.sh)"
+      "Bash(bash scripts/load-zone-lookup.sh)",
+      "Bash(pwd -W)",
+      "Bash(MSYS_NO_PATHCONV=1 docker run --rm -v \"$\\(pwd -W\\)/docs:/data\" minlag/mermaid-cli -i /data/architecture.mermaid -o /data/architecture-diagram.png -w 1600 -H 900 --backgroundColor white)"
     ]
   }
 }

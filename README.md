@@ -10,25 +10,9 @@ End-to-end big data analytics platform processing NYC TLC taxi trip records thro
 
 ## Architecture
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────┐
-│                        NYC Taxi Analytics Platform                              │
-│                                                                                 │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐                   │
-│  │   TLC    │    │  Kafka   │    │  Spark   │    │PostgreSQL│                   │
-│  │ Parquet  │───▶│ Producer │───▶│Streaming │───▶│   DWH    │──┐                │
-│  └──────────┘    └──────────┘    └──────────┘    └──────────┘  │                │
-│       │                                                         ▼                │
-│       ▼                                                  ┌──────────┐            │
-│  ┌──────────┐    ┌──────────┐    ┌──────────┐            │ FastAPI  │            │
-│  │   HDFS   │───▶│ Hadoop MR│───▶│Spark Batch│──┐        └────┬─────┘            │
-│  └──────────┘    └──────────┘    └──────────┘  │              │                  │
-│                                                 ▼              ▼                  │
-│  ┌────────────────────────────────────────────────┐    ┌──────────┐              │
-│  │            Apache Airflow Orchestrator         │    │  React   │              │
-│  └────────────────────────────────────────────────┘    │ Dashboard│              │
-└─────────────────────────────────────────────────────────────────────────────────┘
-```
+![Architecture](docs/architecture-diagram.png)
+
+Source: [`docs/architecture.mermaid`](docs/architecture.mermaid) — regenerate the PNG with `docker run --rm -v "$(pwd)/docs:/data" minlag/mermaid-cli -i /data/architecture.mermaid -o /data/architecture-diagram.png -w 1600 -H 900 --backgroundColor white`.
 
 ## Quick Start
 
@@ -115,6 +99,23 @@ See `docs/cloud-deployment-guide.md` for full instructions, prerequisites, and a
 ## Data Source
 
 NYC Taxi & Limousine Commission (TLC) yellow taxi trip records, distributed monthly as Parquet files at https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page. The dataset is government-published, has a stable schema, and contains hundreds of millions of rows per year — making it an ideal benchmark for big-data engineering.
+
+## Performance
+
+Measured on Docker Desktop, Windows 11, 16 GB RAM, 8-core CPU, local SSD. Numbers are approximate and will vary by machine.
+
+| Pipeline Stage | Data Size | Duration | Throughput |
+|---|---|---|---|
+| Data Download (TLC) | ~160 MB (3 months yellow) | ~2 min | — |
+| HDFS Ingestion | ~160 MB | ~30 s | — |
+| Hadoop MapReduce (zone agg) | ~3.2M trips | ~2 min | — |
+| Spark Batch — trip_analytics | ~3.2M trips | ~45 s | ~70k rows/s |
+| Spark Batch — revenue_aggregation | ~3.2M trips | ~30 s | ~100k rows/s |
+| Spark Batch — fare_prediction_features | ~3.2M trips | ~40 s | ~80k rows/s |
+| Kafka Producer | ~3.2M events | depends on `KAFKA_PRODUCER_DELAY_MS` | ~8k events/s (delay=0) |
+| Spark Structured Streaming | continuous | — | ~500 rows/micro-batch (15s window) |
+
+All batch jobs log `Job completed in Xs — N rows written` via the `time.time()` wrapper in `main()`. The Kafka producer logs a final `events/sec` line on shutdown.
 
 ## Contributing
 

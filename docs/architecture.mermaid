@@ -1,0 +1,52 @@
+flowchart LR
+    subgraph Sources
+        TLC[NYC TLC<br/>Parquet Files]
+    end
+
+    subgraph Ingestion
+        DL[Download Script<br/>Python + tqdm]
+        HDFS[(HDFS<br/>Hadoop 3.4.1)]
+        KP[Kafka Producer<br/>confluent-kafka]
+        KF[Apache Kafka<br/>3.9.0 KRaft]
+    end
+
+    subgraph Batch["Batch Processing"]
+        HMR[Hadoop<br/>MapReduce<br/>Python Streaming]
+        SPB[Spark Batch<br/>PySpark 3.5.4]
+    end
+
+    subgraph Stream["Stream Processing"]
+        SPS[Spark Structured<br/>Streaming]
+    end
+
+    subgraph Orchestration
+        AF[Apache Airflow<br/>2.10.4<br/>3 DAGs]
+    end
+
+    subgraph Storage
+        PG[(PostgreSQL 16<br/>Analytics DWH)]
+        MIO[(MinIO S3<br/>Feature Store)]
+    end
+
+    subgraph Serving
+        API[FastAPI<br/>10 endpoints + SSE]
+        FE[React Dashboard<br/>TypeScript + Tailwind<br/>+ Recharts]
+    end
+
+    subgraph Cloud["Cloud Deploy"]
+        AWS[AWS<br/>EMR + MSK + MWAA<br/>+ RDS + S3]
+        GCP[GCP<br/>Dataproc + Composer<br/>+ Cloud SQL + GCS]
+    end
+
+    TLC --> DL --> HDFS
+    TLC --> KP --> KF
+    HDFS --> HMR --> PG
+    HDFS --> SPB --> PG
+    SPB --> MIO
+    KF --> SPS --> PG
+    AF -.orchestrates.-> DL
+    AF -.orchestrates.-> SPB
+    AF -.orchestrates.-> HMR
+    PG --> API --> FE
+    API --> AWS
+    API --> GCP
