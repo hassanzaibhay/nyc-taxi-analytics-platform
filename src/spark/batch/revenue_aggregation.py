@@ -6,6 +6,7 @@ import argparse
 import logging
 import os
 import sys
+import time
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
@@ -25,11 +26,24 @@ def build_session(master: str) -> SparkSession:
     )
 
 
+def clean(df: DataFrame) -> DataFrame:
+    return df.filter(
+        (F.col("tpep_pickup_datetime") >= F.lit("2024-01-01"))
+        & (F.col("tpep_pickup_datetime") < F.lit("2025-01-01"))
+        & (F.col("fare_amount") > 0)
+        & (F.col("fare_amount") < 500)
+        & (F.col("trip_distance") > 0)
+        & (F.col("trip_distance") < 200)
+        & F.col("PULocationID").isNotNull()
+        & F.col("DOLocationID").isNotNull()
+    )
+
+
 def aggregate_daily(df: DataFrame) -> DataFrame:
     is_cash = F.when(F.col("payment_type") == 2, 1.0).otherwise(0.0)
     is_credit = F.when(F.col("payment_type") == 1, 1.0).otherwise(0.0)
     return (
-        df.filter(F.col("fare_amount") > 0)
+        clean(df)
         .withColumn("trip_date", F.to_date("tpep_pickup_datetime"))
         .withColumn("is_cash", is_cash)
         .withColumn("is_credit", is_credit)
@@ -75,10 +89,15 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    start = time.time()
     spark = build_session(args.master)
     try:
         df = spark.read.schema(YELLOW_TRIP_SCHEMA).parquet(args.input)
-        write_postgres(aggregate_daily(df), args.table)
+        result = aggregate_daily(df).cache()
+        row_count = result.count()
+        write_postgres(result, args.table)
+        elapsed = time.time() - start
+        log.info("Job completed in %.1fs — %s rows written", elapsed, row_count)
         return 0
     except Exception:
         log.exception("Job failed")

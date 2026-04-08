@@ -9,6 +9,7 @@ import argparse
 import logging
 import os
 import sys
+import time
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
@@ -28,10 +29,22 @@ def build_session(master: str) -> SparkSession:
     )
 
 
+def clean(df: DataFrame) -> DataFrame:
+    return df.filter(
+        (F.col("tpep_pickup_datetime") >= F.lit("2024-01-01"))
+        & (F.col("tpep_pickup_datetime") < F.lit("2025-01-01"))
+        & (F.col("fare_amount") > 0)
+        & (F.col("fare_amount") < 500)
+        & (F.col("trip_distance") > 0)
+        & (F.col("trip_distance") < 200)
+        & F.col("PULocationID").isNotNull()
+        & F.col("DOLocationID").isNotNull()
+    )
+
+
 def build_features(df: DataFrame) -> DataFrame:
     base = (
-        df.filter(F.col("fare_amount") > 0)
-        .filter(F.col("trip_distance") > 0)
+        clean(df)
         .withColumn("hour_of_day", F.hour("tpep_pickup_datetime"))
         .withColumn("day_of_week", F.dayofweek("tpep_pickup_datetime"))
         .withColumn("month", F.month("tpep_pickup_datetime"))
@@ -73,12 +86,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    start = time.time()
     spark = build_session(args.master)
     try:
         df = spark.read.schema(YELLOW_TRIP_SCHEMA).parquet(args.input)
-        features = build_features(df)
+        features = build_features(df).cache()
+        row_count = features.count()
         log.info("Writing features to %s", args.output)
         features.write.mode("overwrite").option("compression", "snappy").parquet(args.output)
+        elapsed = time.time() - start
+        log.info("Job completed in %.1fs — %s rows written", elapsed, row_count)
         return 0
     except Exception:
         log.exception("Job failed")

@@ -10,6 +10,7 @@ import argparse
 import logging
 import os
 import sys
+import time
 
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
@@ -33,6 +34,20 @@ def build_session(master: str) -> SparkSession:
     )
 
 
+def clean(df: DataFrame) -> DataFrame:
+    """Drop outliers and clearly invalid rows before aggregation."""
+    return df.filter(
+        (F.col("tpep_pickup_datetime") >= F.lit("2024-01-01"))
+        & (F.col("tpep_pickup_datetime") < F.lit("2025-01-01"))
+        & (F.col("fare_amount") > 0)
+        & (F.col("fare_amount") < 500)
+        & (F.col("trip_distance") > 0)
+        & (F.col("trip_distance") < 200)
+        & F.col("PULocationID").isNotNull()
+        & F.col("DOLocationID").isNotNull()
+    )
+
+
 def aggregate(df: DataFrame) -> DataFrame:
     """Compute hourly per-zone demand metrics."""
     duration_min = (
@@ -41,8 +56,7 @@ def aggregate(df: DataFrame) -> DataFrame:
     tip_pct = F.when(F.col("fare_amount") > 0, F.col("tip_amount") / F.col("fare_amount") * 100)
 
     return (
-        df.filter(F.col("fare_amount") > 0)
-        .filter(F.col("trip_distance") > 0)
+        clean(df)
         .withColumn("hour_start", F.date_trunc("hour", "tpep_pickup_datetime"))
         .withColumn("duration_minutes", duration_min)
         .withColumn("tip_pct", tip_pct)
@@ -90,13 +104,16 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    start = time.time()
     spark = build_session(args.master)
     try:
         log.info("Reading parquet from %s", args.input)
         df = spark.read.schema(YELLOW_TRIP_SCHEMA).parquet(args.input)
-        result = aggregate(df)
+        result = aggregate(df).cache()
+        row_count = result.count()
         write_postgres(result, args.table)
-        log.info("Job complete")
+        elapsed = time.time() - start
+        log.info("Job completed in %.1fs — %s rows written", elapsed, row_count)
         return 0
     except Exception:
         log.exception("Job failed")

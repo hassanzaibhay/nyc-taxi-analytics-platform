@@ -101,6 +101,7 @@ def main() -> int:
     producer = build_producer(args.bootstrap)
     sent = 0
     delay = args.delay_ms / 1000.0
+    start = time.time()
 
     try:
         for row in stream_parquet_files(args.data_dir):
@@ -124,6 +125,9 @@ def main() -> int:
     finally:
         log.info("Flushing producer (sent=%s)...", sent)
         producer.flush(10)
+        elapsed = time.time() - start
+        rate = sent / elapsed if elapsed > 0 else 0
+        log.info("Producer finished: %s events in %.1fs (%.0f events/sec)", sent, elapsed, rate)
 
     return 0
 

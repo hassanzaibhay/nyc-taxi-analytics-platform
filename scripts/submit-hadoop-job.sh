@@ -12,6 +12,8 @@ log "Submitting Hadoop Streaming job"
 log "  input=${INPUT}"
 log "  output=${OUTPUT}"
 
+readonly START=$(date +%s)
+
 docker compose exec -T namenode hadoop jar "${STREAMING_JAR}" \
     -files /opt/mapreduce/mapper_zone_aggregation.py,/opt/mapreduce/reducer_zone_aggregation.py \
     -mapper "/usr/bin/python3 mapper_zone_aggregation.py" \
@@ -19,4 +21,6 @@ docker compose exec -T namenode hadoop jar "${STREAMING_JAR}" \
     -input "${INPUT}" \
     -output "${OUTPUT}"
 
+readonly END=$(date +%s)
+log "MapReduce completed in $((END - START)) seconds"
 log "Job complete: ${OUTPUT}"
