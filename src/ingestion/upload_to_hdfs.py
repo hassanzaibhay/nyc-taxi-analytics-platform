@@ -18,7 +18,7 @@ log = logging.getLogger("upload_to_hdfs")
 FILENAME_RE = re.compile(r"(?P<type>\w+)_tripdata_(?P<year>\d{4})-(?P<month>\d{2})\.parquet")
 
 
-def hdfs(*args: str) -> subprocess.CompletedProcess:
+def hdfs(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(["hdfs", "dfs", *args], capture_output=True, text=True, check=False)
 
 

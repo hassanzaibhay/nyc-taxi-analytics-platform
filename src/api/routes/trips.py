@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import text
@@ -43,7 +44,7 @@ async def hourly_trips(
           AND EXTRACT(HOUR FROM hour_start) >= :hour_from
           AND EXTRACT(HOUR FROM hour_start) <= :hour_to
     """
-    params: dict = {
+    params: dict[str, Any] = {
         "date_from": date_from,
         "date_to": date_to,
         "hour_from": hour_from,

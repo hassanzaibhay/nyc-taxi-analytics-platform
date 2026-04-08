@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import asyncio
 import json
+from collections.abc import AsyncGenerator
 from datetime import datetime
+from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 from sqlalchemy import text
@@ -35,7 +37,7 @@ async def realtime_demand(db: AsyncSession = Depends(get_db)) -> list[RealtimeDe
     return [RealtimeDemand(**row) for row in rows]
 
 
-async def _event_generator(request: Request):
+async def _event_generator(request: Request) -> AsyncGenerator[dict[str, Any], None]:
     sql = """
         SELECT zone_id, window_start, window_end, trip_count, avg_fare
         FROM realtime.zone_demand_live

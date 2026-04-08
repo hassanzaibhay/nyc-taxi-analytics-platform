@@ -29,7 +29,8 @@ def serialize(event: TripEvent) -> bytes:
 
 
 def deserialize(payload: bytes) -> dict[str, Any]:
-    return json.loads(payload.decode("utf-8"))
+    result: dict[str, Any] = json.loads(payload.decode("utf-8"))
+    return result
 
 
 def validate(payload: dict[str, Any]) -> bool:
