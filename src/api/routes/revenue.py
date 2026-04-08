@@ -99,4 +99,6 @@ async def tip_analysis(
         .mappings()
         .all()
     )
-    return [TipByHour(hour=row["hour"], avg_tip_pct=float(row["avg_tip_pct"] or 0)) for row in rows]
+    return [
+        TipByHour(hour=row["hour"], avg_tip_pct=float(row["avg_tip_pct"] or 0)) for row in rows
+    ]

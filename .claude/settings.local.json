@@ -51,7 +51,8 @@
       "Bash(make urls:*)",
       "Bash(make status:*)",
       "Bash(xargs grep:*)",
-      "Bash(xargs -I{} echo {})"
+      "Bash(xargs -I{} echo {})",
+      "Bash(pytest tests/ -q --tb=short)"
     ]
   }
 }
