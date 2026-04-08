@@ -28,7 +28,7 @@ jobs:
           ruff format --check src tests
 
       - name: Type check (mypy)
-        run: mypy src || true
+        run: mypy src/api src/ingestion src/kafka --ignore-missing-imports
 
       - name: Run tests
         run: pytest -q

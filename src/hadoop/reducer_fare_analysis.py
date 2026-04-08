@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Reducer: aggregate fare and tip statistics per payment type."""
+
 from __future__ import annotations
 
 import sys
-from typing import Optional
 
 
 def emit(key: str, count: int, total_fare: float, total_tip: float) -> None:
@@ -15,7 +15,7 @@ def emit(key: str, count: int, total_fare: float, total_tip: float) -> None:
 
 
 def main() -> None:
-    current_key: Optional[str] = None
+    current_key: str | None = None
     count = 0
     total_fare = 0.0
     total_tip = 0.0

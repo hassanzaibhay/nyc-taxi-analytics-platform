@@ -1,4 +1,5 @@
 """Kafka event schemas (JSON for dev; Avro recommended for production)."""
+
 from __future__ import annotations
 
 import json

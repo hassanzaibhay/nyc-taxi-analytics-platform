@@ -6,8 +6,8 @@ Expects mapper output sorted by key on stdin. Emits one line per key.
 Output format:
     zone_id\\thour\\ttrip_count\\tavg_fare\\tavg_distance
 """
+
 import sys
-from typing import Optional
 
 
 def emit(key: str, count: int, total_fare: float, total_distance: float) -> None:
@@ -19,7 +19,7 @@ def emit(key: str, count: int, total_fare: float, total_distance: float) -> None
 
 
 def main() -> None:
-    current_key: Optional[str] = None
+    current_key: str | None = None
     count = 0
     total_fare = 0.0
     total_distance = 0.0

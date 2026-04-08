@@ -7,6 +7,7 @@ Designed for Hadoop Streaming. Bad rows are skipped and reported on stderr.
 Output format:
     PULocationID\\thour    fare\\tdistance\\t1
 """
+
 import sys
 
 # CSV column indices for the NYC TLC yellow taxi schema (after parquet → csv).

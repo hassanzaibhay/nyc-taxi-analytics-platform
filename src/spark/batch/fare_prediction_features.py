@@ -2,6 +2,7 @@
 
 Produces a feature dataset (parquet) suitable for downstream ML training.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -44,9 +45,7 @@ def build_features(df: DataFrame) -> DataFrame:
         .withColumn("zone_pair", F.concat_ws("-", "PULocationID", "DOLocationID"))
     )
 
-    zone_pair_avg = base.groupBy("zone_pair").agg(
-        F.avg("fare_amount").alias("zone_pair_avg_fare")
-    )
+    zone_pair_avg = base.groupBy("zone_pair").agg(F.avg("fare_amount").alias("zone_pair_avg_fare"))
 
     return base.join(zone_pair_avg, on="zone_pair", how="left").select(
         "tpep_pickup_datetime",

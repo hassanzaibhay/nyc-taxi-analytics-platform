@@ -1,4 +1,5 @@
 """Real-time demand endpoints (snapshot + SSE stream)."""
+
 from __future__ import annotations
 
 import asyncio
@@ -53,8 +54,12 @@ async def _event_generator(request: Request):
         payload = [
             {
                 "zone_id": r["zone_id"],
-                "window_start": r["window_start"].isoformat() if isinstance(r["window_start"], datetime) else r["window_start"],
-                "window_end": r["window_end"].isoformat() if isinstance(r["window_end"], datetime) else r["window_end"],
+                "window_start": r["window_start"].isoformat()
+                if isinstance(r["window_start"], datetime)
+                else r["window_start"],
+                "window_end": r["window_end"].isoformat()
+                if isinstance(r["window_end"], datetime)
+                else r["window_end"],
                 "trip_count": r["trip_count"],
                 "avg_fare": float(r["avg_fare"]) if r["avg_fare"] is not None else None,
             }

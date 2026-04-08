@@ -1,7 +1,8 @@
 """Health and readiness endpoints."""
+
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import text
@@ -25,5 +26,5 @@ async def health(db: AsyncSession = Depends(get_db)) -> HealthResponse:
     return HealthResponse(
         status="healthy",
         database=db_status,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )

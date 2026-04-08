@@ -1,4 +1,5 @@
 """Validate downloaded TLC parquet files for schema and quality."""
+
 from __future__ import annotations
 
 import argparse

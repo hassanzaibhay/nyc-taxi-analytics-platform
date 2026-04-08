@@ -1,4 +1,5 @@
 """Pydantic v2 response models."""
+
 from __future__ import annotations
 
 from datetime import date, datetime

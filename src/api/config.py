@@ -1,4 +1,5 @@
 """API server configuration loaded from environment variables."""
+
 from __future__ import annotations
 
 from functools import lru_cache
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
     postgres_port: int = 5432
     postgres_db: str = "nyc_taxi"
     postgres_user: str = "taxi_user"
+    # Dev default only — must be overridden via .env in production deployments
     postgres_password: str = "taxi_pass"
 
     api_host: str = "0.0.0.0"

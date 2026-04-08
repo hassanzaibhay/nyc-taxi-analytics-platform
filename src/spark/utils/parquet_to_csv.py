@@ -1,4 +1,5 @@
 """Convert NYC TLC Parquet files in HDFS to CSV for Hadoop Streaming."""
+
 from pyspark.sql import SparkSession
 
 spark = SparkSession.builder.appName("parquet-to-csv").getOrCreate()

@@ -1,4 +1,5 @@
 """Trip-level analytics endpoints."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -74,8 +75,10 @@ async def trip_summary(
           AND hour_start::date <= :date_to
     """
     row = (
-        await db.execute(text(sql), {"date_from": date_from, "date_to": date_to})
-    ).mappings().one()
+        (await db.execute(text(sql), {"date_from": date_from, "date_to": date_to}))
+        .mappings()
+        .one()
+    )
     return TripSummary(
         total_trips=int(row["total_trips"]),
         total_revenue=Decimal(row["total_revenue"]),

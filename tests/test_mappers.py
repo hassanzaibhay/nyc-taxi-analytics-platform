@@ -1,4 +1,5 @@
 """Tests for Hadoop streaming mappers (pure stdin/stdout scripts)."""
+
 from __future__ import annotations
 
 import subprocess
@@ -8,9 +9,7 @@ from pathlib import Path
 MAPPER_ZONE = Path(__file__).parent.parent / "src" / "hadoop" / "mapper_zone_aggregation.py"
 MAPPER_FARE = Path(__file__).parent.parent / "src" / "hadoop" / "mapper_fare_analysis.py"
 
-SAMPLE_ROW = (
-    "2,2024-01-15 08:15:00,2024-01-15 08:32:00,1,3.5,1,N,132,236,1,18.5,3.0,0.5,4.5,0.0,1.0,27.5,2.5,0"
-)
+SAMPLE_ROW = "2,2024-01-15 08:15:00,2024-01-15 08:32:00,1,3.5,1,N,132,236,1,18.5,3.0,0.5,4.5,0.0,1.0,27.5,2.5,0"
 
 
 def run(script: Path, stdin_data: str) -> str:

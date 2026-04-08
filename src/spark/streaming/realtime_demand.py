@@ -1,4 +1,5 @@
 """Spark Structured Streaming: real-time zone demand from Kafka."""
+
 from __future__ import annotations
 
 import argparse
@@ -72,7 +73,9 @@ def parse_args() -> argparse.Namespace:
         "--bootstrap-servers",
         default=os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "kafka:9092"),
     )
-    parser.add_argument("--topic", default=os.environ.get("KAFKA_TOPIC_TRIPS", "nyc-taxi.trips.raw"))
+    parser.add_argument(
+        "--topic", default=os.environ.get("KAFKA_TOPIC_TRIPS", "nyc-taxi.trips.raw")
+    )
     parser.add_argument("--checkpoint", default="/tmp/checkpoint/realtime_demand")
     return parser.parse_args()
 

@@ -3,6 +3,7 @@
 Reads NYC TLC parquet data, computes per-zone hourly aggregates, and writes
 results to PostgreSQL ``analytics.hourly_zone_demand``.
 """
+
 from __future__ import annotations
 
 import argparse

@@ -1,4 +1,5 @@
 """Zone-level analytics endpoints."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -31,8 +32,10 @@ async def zone_demand(
         ORDER BY zone_id, hour
     """
     rows = (
-        await db.execute(text(sql), {"date_from": date_from, "date_to": date_to})
-    ).mappings().all()
+        (await db.execute(text(sql), {"date_from": date_from, "date_to": date_to}))
+        .mappings()
+        .all()
+    )
     return [ZoneDemandPoint(**row) for row in rows]
 
 
@@ -55,8 +58,8 @@ async def top_zones(
         LIMIT :n
     """
     rows = (
-        await db.execute(
-            text(sql), {"n": n, "date_from": date_from, "date_to": date_to}
-        )
-    ).mappings().all()
+        (await db.execute(text(sql), {"n": n, "date_from": date_from, "date_to": date_to}))
+        .mappings()
+        .all()
+    )
     return [TopZone(**row) for row in rows]

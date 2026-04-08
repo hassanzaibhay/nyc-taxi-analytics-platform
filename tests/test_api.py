@@ -3,6 +3,7 @@
 These tests use TestClient and a stubbed DB session to avoid requiring a
 running PostgreSQL during unit testing.
 """
+
 from __future__ import annotations
 
 import pytest

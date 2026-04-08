@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Mapper: emit (payment_type, fare, tip) for fare analysis."""
+
 from __future__ import annotations
 
 import sys

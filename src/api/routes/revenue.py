@@ -1,4 +1,5 @@
 """Revenue endpoints."""
+
 from __future__ import annotations
 
 from datetime import date
@@ -37,8 +38,10 @@ async def daily_revenue(
         ORDER BY trip_date
     """
     rows = (
-        await db.execute(text(sql), {"date_from": date_from, "date_to": date_to})
-    ).mappings().all()
+        (await db.execute(text(sql), {"date_from": date_from, "date_to": date_to}))
+        .mappings()
+        .all()
+    )
     return [DailyRevenue(**row) for row in rows]
 
 
@@ -60,9 +63,17 @@ async def payment_breakdown(
           AND trip_date <= :date_to
     """
     row = (
-        await db.execute(text(sql), {"date_from": date_from, "date_to": date_to})
-    ).mappings().one()
+        (await db.execute(text(sql), {"date_from": date_from, "date_to": date_to}))
+        .mappings()
+        .one()
+    )
     return [
-        PaymentBreakdown(payment_type="cash", trip_count=row["cash_trips"] or 0, revenue=row["cash_rev"] or 0),
-        PaymentBreakdown(payment_type="credit_card", trip_count=row["credit_trips"] or 0, revenue=row["credit_rev"] or 0),
+        PaymentBreakdown(
+            payment_type="cash", trip_count=row["cash_trips"] or 0, revenue=row["cash_rev"] or 0
+        ),
+        PaymentBreakdown(
+            payment_type="credit_card",
+            trip_count=row["credit_trips"] or 0,
+            revenue=row["credit_rev"] or 0,
+        ),
     ]

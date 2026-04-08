@@ -1,4 +1,5 @@
 """Download NYC TLC parquet files from the public CloudFront mirror."""
+
 from __future__ import annotations
 
 import argparse
@@ -37,9 +38,10 @@ def download_one(url: str, dest: Path) -> bool:
     log.info("Downloading %s -> %s", url, dest)
     with requests.get(url, stream=True, timeout=120) as resp:
         resp.raise_for_status()
-        with open(dest, "wb") as fh, tqdm(
-            total=remote_size, unit="B", unit_scale=True, desc=dest.name
-        ) as bar:
+        with (
+            open(dest, "wb") as fh,
+            tqdm(total=remote_size, unit="B", unit_scale=True, desc=dest.name) as bar,
+        ):
             for chunk in resp.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     fh.write(chunk)
@@ -54,7 +56,9 @@ def download_one(url: str, dest: Path) -> bool:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--year", type=int, default=int(os.environ.get("TLC_START_YEAR", "2024")))
-    parser.add_argument("--start-month", type=int, default=int(os.environ.get("TLC_START_MONTH", "1")))
+    parser.add_argument(
+        "--start-month", type=int, default=int(os.environ.get("TLC_START_MONTH", "1"))
+    )
     parser.add_argument("--end-month", type=int, default=int(os.environ.get("TLC_END_MONTH", "3")))
     parser.add_argument("--taxi-type", default=os.environ.get("TLC_TAXI_TYPE", "yellow"))
     parser.add_argument("--output-dir", default="data/raw", type=Path)

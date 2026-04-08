@@ -13,7 +13,10 @@ extend-exclude = ["src/frontend", "data", "infra"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "C4"]
-ignore = ["E501"]
+ignore = ["E501", "B008"]  # B008: FastAPI uses Depends()/Query() in defaults by design
+
+[tool.ruff.lint.per-file-ignores]
+"src/spark/**/*.py" = ["N812"]  # PySpark convention: import functions as F
 
 [tool.ruff.format]
 quote-style = "double"

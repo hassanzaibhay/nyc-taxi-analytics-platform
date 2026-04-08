@@ -2,6 +2,7 @@
 
 Idempotent: skips files that already exist with the same size.
 """
+
 from __future__ import annotations
 
 import argparse

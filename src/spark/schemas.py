@@ -2,6 +2,7 @@
 
 Never rely on schema inference for production jobs — define the contract here.
 """
+
 from __future__ import annotations
 
 from pyspark.sql.types import (

@@ -1,4 +1,5 @@
 """Daily revenue rollup → analytics.daily_summary."""
+
 from __future__ import annotations
 
 import argparse

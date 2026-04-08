@@ -2,6 +2,7 @@
 
 Replays NYC TLC parquet files into a Kafka topic with configurable delay.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -68,19 +69,22 @@ def stream_parquet_files(data_dir: Path) -> Any:
         log.info("Reading %s", path)
         table = pq.read_table(path)
         for batch in table.to_batches(max_chunksize=1000):
-            for row in batch.to_pylist():
-                yield row
+            yield from batch.to_pylist()
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="NYC Taxi Kafka producer")
     parser.add_argument("--data-dir", default="data/raw", type=Path)
-    parser.add_argument("--topic", default=os.environ.get("KAFKA_TOPIC_TRIPS", "nyc-taxi.trips.raw"))
+    parser.add_argument(
+        "--topic", default=os.environ.get("KAFKA_TOPIC_TRIPS", "nyc-taxi.trips.raw")
+    )
     parser.add_argument(
         "--bootstrap",
         default=os.environ.get("KAFKA_BOOTSTRAP_SERVERS", "localhost:9094"),
     )
-    parser.add_argument("--delay-ms", type=int, default=int(os.environ.get("KAFKA_PRODUCER_DELAY_MS", "10")))
+    parser.add_argument(
+        "--delay-ms", type=int, default=int(os.environ.get("KAFKA_PRODUCER_DELAY_MS", "10"))
+    )
     parser.add_argument("--max-events", type=int, default=0, help="0 = unlimited")
     return parser.parse_args()
 
