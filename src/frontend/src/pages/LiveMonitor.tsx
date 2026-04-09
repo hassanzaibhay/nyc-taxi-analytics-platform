@@ -1,4 +1,5 @@
 import { useRealtime } from '../hooks/useRealtime';
+import { boroughBorderClass, formatCurrency } from '../utils/formatters';
 
 const STATUS_COLOR = {
   connecting: 'bg-amber-500',
@@ -28,15 +29,18 @@ export default function LiveMonitor() {
           {data.slice(0, 24).map((d) => (
             <div
               key={`${d.zone_id}-${d.window_start}`}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm"
+              className={`rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 shadow-sm border-l-4 ${boroughBorderClass(d.borough)}`}
             >
-              <div className="text-xs font-medium text-slate-500 truncate" title={d.zone_name ?? `Zone ${d.zone_id}`}>
+              <div
+                className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate"
+                title={d.zone_name ?? `Zone ${d.zone_id}`}
+              >
                 {d.zone_name ?? `Zone ${d.zone_id}`}
               </div>
               {d.borough && <div className="text-[10px] text-slate-400">{d.borough}</div>}
               <div className="mt-2 text-2xl font-semibold">{d.trip_count}</div>
               <div className="mt-1 text-xs text-slate-400">
-                {d.avg_fare !== null ? `$${Number(d.avg_fare).toFixed(2)} avg` : '—'}
+                {d.avg_fare !== null ? `${formatCurrency(Number(d.avg_fare))} avg` : '—'}
               </div>
             </div>
           ))}

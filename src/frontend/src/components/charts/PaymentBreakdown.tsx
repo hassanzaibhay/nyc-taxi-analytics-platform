@@ -1,5 +1,6 @@
 import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 import type { PaymentBreakdown as PB } from '../../types';
+import { formatNumber } from '../../utils/formatters';
 
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#64748B'];
 
@@ -22,11 +23,15 @@ const formatName = (raw: string) => PAYMENT_NAMES[raw] ?? raw;
 
 export default function PaymentBreakdownChart({ data }: { data: PB[] }) {
   const total = data.reduce((sum, d) => sum + d.trip_count, 0) || 1;
-  const rows = data.map((d) => ({
-    ...d,
-    name: formatName(d.payment_type),
-    pct: (d.trip_count / total) * 100,
-  }));
+  const rows = data.map((d) => {
+    const pct = (d.trip_count / total) * 100;
+    return {
+      ...d,
+      name: `${formatName(d.payment_type)} — ${formatNumber(d.trip_count)} (${pct.toFixed(0)}%)`,
+      shortName: formatName(d.payment_type),
+      pct,
+    };
+  });
 
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -34,12 +39,12 @@ export default function PaymentBreakdownChart({ data }: { data: PB[] }) {
         <Pie
           data={rows}
           dataKey="trip_count"
-          nameKey="name"
-          innerRadius={55}
-          outerRadius={95}
+          nameKey="shortName"
+          innerRadius={50}
+          outerRadius={85}
           paddingAngle={2}
-          label={({ name, pct }: { name: string; pct: number }) =>
-            `${name} ${pct.toFixed(0)}%`
+          label={({ shortName, pct }: { shortName: string; pct: number }) =>
+            `${shortName} ${pct.toFixed(0)}%`
           }
           labelLine={false}
         >
@@ -50,10 +55,20 @@ export default function PaymentBreakdownChart({ data }: { data: PB[] }) {
         <Tooltip
           formatter={(value: number, _name, entry) => {
             const pct = (entry?.payload as { pct?: number } | undefined)?.pct ?? 0;
-            return [`${value.toLocaleString()} trips (${pct.toFixed(1)}%)`, 'Count'];
+            return [`${formatNumber(value)} trips (${pct.toFixed(1)}%)`, 'Count'];
           }}
         />
-        <Legend verticalAlign="bottom" height={32} iconType="circle" />
+        <Legend
+          verticalAlign="bottom"
+          height={48}
+          iconType="circle"
+          payload={rows.map((r, i) => ({
+            value: r.name,
+            type: 'circle',
+            id: r.shortName,
+            color: COLORS[i % COLORS.length],
+          }))}
+        />
       </PieChart>
     </ResponsiveContainer>
   );

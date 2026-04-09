@@ -6,9 +6,7 @@ import RevenueTrend from '../components/charts/RevenueTrend';
 import { useTripSummary } from '../hooks/useTrips';
 import { useDailyRevenue } from '../hooks/useRevenue';
 import type { DateRange } from '../types';
-
-const fmtNum = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 0 });
-const fmtCurrency = (n: number) => `$${(n / 1000).toFixed(1)}k`;
+import { formatCurrency, formatNumber, formatPercent } from '../utils/formatters';
 
 export default function Overview() {
   const [range, setRange] = useState<DateRange>({});
@@ -25,22 +23,22 @@ export default function Overview() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KPICard
           title="Total Trips"
-          value={summary.data ? fmtNum(summary.data.total_trips) : '—'}
+          value={summary.data ? formatNumber(summary.data.total_trips) : '—'}
           icon={Car}
         />
         <KPICard
           title="Total Revenue"
-          value={summary.data ? fmtCurrency(Number(summary.data.total_revenue)) : '—'}
+          value={summary.data ? formatCurrency(Number(summary.data.total_revenue)) : '—'}
           icon={DollarSign}
         />
         <KPICard
           title="Avg Fare"
-          value={summary.data ? `$${Number(summary.data.avg_fare).toFixed(2)}` : '—'}
+          value={summary.data ? formatCurrency(Number(summary.data.avg_fare)) : '—'}
           icon={Route}
         />
         <KPICard
           title="Avg Tip %"
-          value={summary.data ? `${Number(summary.data.avg_tip_pct).toFixed(1)}%` : '—'}
+          value={summary.data ? formatPercent(Number(summary.data.avg_tip_pct)) : '—'}
           icon={Percent}
         />
       </div>
