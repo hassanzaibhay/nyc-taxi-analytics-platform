@@ -99,14 +99,14 @@ export default function FareInsights() {
         {fares.isLoading ? (
           <div className="h-64 animate-pulse rounded bg-slate-100" />
         ) : fareRows.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={fareRows} margin={{ left: 10, right: 10 }}>
+          <ResponsiveContainer width="100%" height={360}>
+            <BarChart data={fareRows} margin={{ top: 10, right: 30, left: 20, bottom: 40 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="label"
                 tick={{ fontSize: 12 }}
                 interval={0}
-                label={{ value: 'Fare range (USD)', position: 'insideBottom', offset: -4 }}
+                label={{ value: 'Fare range (USD)', position: 'insideBottom', offset: -15 }}
               />
               <YAxis
                 tick={{ fontSize: 12 }}
@@ -206,15 +206,15 @@ export default function FareInsights() {
         {tips.isLoading ? (
           <div className="h-64 animate-pulse rounded bg-slate-100" />
         ) : tips.data && tips.data.length > 0 ? (
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={tips.data} margin={{ left: 10, right: 10 }}>
+          <ResponsiveContainer width="100%" height={360}>
+            <BarChart data={tips.data} margin={{ top: 10, right: 30, left: 20, bottom: 40 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis
                 dataKey="hour"
                 tick={{ fontSize: 11 }}
                 tickFormatter={(h: number) => formatHour(h)}
                 interval={2}
-                label={{ value: 'Hour of day', position: 'insideBottom', offset: -4 }}
+                label={{ value: 'Hour of day', position: 'insideBottom', offset: -15 }}
               />
               <YAxis
                 tick={{ fontSize: 12 }}

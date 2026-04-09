@@ -67,31 +67,30 @@ export default function ZoneAnalytics() {
         <DateRangeFilter onChange={setRange} />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
-          <h3 className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
-            Demand Heatmap
-          </h3>
-          <p className="mb-4 text-xs text-slate-500">
-            Top 20 zones by trip volume, aggregated by hour of day
-          </p>
-          {demand.data ? (
-            <DemandHeatmap data={demand.data} topN={20} />
-          ) : (
-            <div className="h-80 animate-pulse rounded bg-slate-100" />
-          )}
-        </div>
-        <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
-          <h3 className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
-            Top 10 Zones
-          </h3>
-          <p className="mb-4 text-xs text-slate-500">Ranked by total trips</p>
-          {top.data ? (
-            <TopZonesBar data={top.data} />
-          ) : (
-            <div className="h-80 animate-pulse rounded bg-slate-100" />
-          )}
-        </div>
+      <div className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
+        <h3 className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
+          Demand Heatmap
+        </h3>
+        <p className="mb-4 text-xs text-slate-500">
+          Top 20 zones by trip volume, aggregated by hour of day
+        </p>
+        {demand.data ? (
+          <DemandHeatmap data={demand.data} topN={20} />
+        ) : (
+          <div className="h-80 animate-pulse rounded bg-slate-100" />
+        )}
+      </div>
+
+      <div className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">
+        <h3 className="mb-1 text-sm font-semibold text-slate-700 dark:text-slate-200">
+          Top 10 Zones
+        </h3>
+        <p className="mb-4 text-xs text-slate-500">Ranked by total trips</p>
+        {top.data ? (
+          <TopZonesBar data={top.data} />
+        ) : (
+          <div className="h-80 animate-pulse rounded bg-slate-100" />
+        )}
       </div>
 
       <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-5 shadow-sm">

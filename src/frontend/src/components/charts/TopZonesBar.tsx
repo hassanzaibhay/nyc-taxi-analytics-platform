@@ -23,7 +23,7 @@ export default function TopZonesBar({ data }: { data: TopZone[] }) {
 
   return (
     <ResponsiveContainer width="100%" height={Math.max(320, rows.length * 32)}>
-      <BarChart data={rows} layout="vertical" margin={{ left: 10, right: 60 }}>
+      <BarChart data={rows} layout="vertical" margin={{ top: 10, right: 80, left: 10, bottom: 20 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
         <XAxis type="number" stroke="#94a3b8" fontSize={11} tickFormatter={formatNumber} />
         <YAxis

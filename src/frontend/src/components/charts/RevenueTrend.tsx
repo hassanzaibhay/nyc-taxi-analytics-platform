@@ -13,7 +13,7 @@ import { formatCurrency } from '../../utils/formatters';
 export default function RevenueTrend({ data }: { data: DailyRevenue[] }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <AreaChart data={data} margin={{ left: 10, right: 10 }}>
+      <AreaChart data={data} margin={{ top: 10, right: 30, left: 20, bottom: 30 }}>
         <defs>
           <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#3B82F6" stopOpacity={0.4} />
